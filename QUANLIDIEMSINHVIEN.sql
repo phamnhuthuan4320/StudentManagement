@@ -1,0 +1,286 @@
+---------------------------------------------------------------------------------------
+CREATE DATABASE QUANLISINHVIEN;
+USE QUANLISINHVIEN;
+-- DROP DATABASE QUANLISINHVIEN;
+---------------------------------------------------------------------------------------
+CREATE TABLE khoa (
+	maKhoa CHAR(8) PRIMARY KEY,
+	tenKhoa VARCHAR(50) NOT NULL
+);
+-- DROP TABLE khoa;
+-- SELECT * FROM khoa;
+CREATE TABLE sinhVien (
+	mssv CHAR(8) CHECK (mssv REGEXP '^[A-Z][0-9][0-9][0-9][0-9][0-9][0-9][0-9]'),
+	hoTen VARCHAR(45) NOT NULL CHECK(hoTen REGEXP '^[a-z ]+$'),
+	gioiTinh CHAR(3) NOT NULL CHECK(gioiTinh IN('NAM', 'NU')),
+	ngaySinh DATE NOT NULL,
+	noiSinh VARCHAR(40) NOT NULL,
+	diaChi VARCHAR(100) NOT NULL,
+	maKhoa CHAR(8),
+    PRIMARY KEY(mssv),
+	CONSTRAINT fk_maKhoa FOREIGN KEY(maKhoa) REFERENCES khoa(maKhoa)
+);
+-- DROP TABLE sinhVien;
+-- SELECT * FROM sinhVien;
+CREATE TABLE hocPhan(
+	maHP CHAR(6) PRIMARY KEY,
+	tenHP VARCHAR(50) NOT NULL,
+	soTinChi INT NOT NULL,
+	soTietLT INT NOT NULL,
+	soTietTH INT NOT NULL
+);
+-- DROP TABLE hocPhan;
+-- SELECT * FROM hocPhan;
+CREATE TABLE ketQua (
+	mssv CHAR(8),
+	maHP CHAR(8),
+	diem FLOAT CHECK (diem BETWEEN 0 AND 10),
+	CONSTRAINT pk_mssvmaHP PRIMARY KEY(mssv,maHP),
+    CONSTRAINT fk_mssv FOREIGN KEY(mssv) REFERENCES sinhVien(mssv),
+    CONSTRAINT fk_maHP FOREIGN KEY(maHP) REFERENCES hocphan(maHP)
+);
+-- DROP TABLE ketQua;
+-- SELECT * FROM ketQua;
+-------------------------------------------------------------------------------------
+-- HOC PHAN
+INSERT INTO hocPhan
+	VALUES ('CT101','LAP TRINH CAN BAN',4,30,60);
+INSERT INTO hocPhan
+	VALUES ('CT176','LAP TRINH HUONG DOI TUONG',3,30,60);
+INSERT INTO hocPhan
+	VALUES ('TN001','VI TICH PHAN A1',3,45,0);
+INSERT INTO hocPhan
+	VALUES ('TN101','XAC XUAT THONG KE',3,45,0);
+INSERT INTO hocPhan
+	VALUES ('CT237','NGUYEN LY HE DIEU HANH',3,30,30);
+INSERT INTO hocPhan
+	VALUES ('SP012','DAI SO TUYEN TINH',4,60,0);
+INSERT INTO hocPhan
+	VALUES ('TN172','TOAN ROI RAC',4,60,0);
+-- KHOA
+INSERT INTO khoa
+	VALUES ('KTQTKD','KINH TE VA QUAN TRI KINH DOANH');
+INSERT INTO khoa
+	VALUES ('CNTTTT','CONG NGHE THONG TIN VA TRUYEN THONG');
+INSERT INTO khoa
+	VALUES ('KHTN','KHOA HOC TU NHIEN');
+INSERT INTO khoa
+	VALUES ('KHXH','KHOA HOC XA HOI');
+INSERT INTO khoa
+	VALUES ('SP','SU PHAM');
+-- SINH VIEN
+INSERT INTO sinhVien
+	VALUES ('B1234567','NGUYEN THANH HAI','NAM','2001-12-02','BAC LIEU','PHONG 01, KTX KHU B, DAI HOC CAN THO','CNTTTT');
+INSERT INTO sinhVien
+	VALUES ('B1234568','TRAN THANH MAI','NU','2001-01-20','CAN THO','232, TRAN VAN KHEO, NINH KIEU, CAN THO','CNTTTT');
+INSERT INTO sinhVien
+	VALUES ('B1234569','TRAN THU THUY','NU','2001-04-11','CA MAU','PHONG 04, KTX KHU A, DAI HOC CAN THO','KHXH');
+INSERT INTO sinhVien
+	VALUES ('B1334567','NGUYEN VAN NAM','NAM','2001-10-09','VINH LONG','523, TRAN QUANG DIEU, BINH THUY, CAN THO','SP');
+INSERT INTO sinhVien
+	VALUES ('B1334568','PHAM HUU LONG','NAM','2001-09-02','AN GIANG','PHONG 08, KTX KHU B, DAI HOC CAN THO','KHTN');
+INSERT INTO sinhVien
+	VALUES ('B1244567','LE THU LAN','NU','2001-07-15','BEN TRE','586, NGUYEN VAN LINH, NINH KIEU, CAN THO','KTQTKD');
+-- KET QUA
+INSERT INTO ketQua
+	VALUES ('B1234567','CT101',10);
+INSERT INTO ketQua
+	VALUES ('B1234567','CT176',8);
+INSERT INTO ketQua
+	VALUES ('B1234567','TN001',7);
+INSERT INTO ketQua
+	VALUES ('B1234567','TN172',9);
+INSERT INTO ketQua
+	VALUES ('B1234568','CT237',5);
+INSERT INTO ketQua
+	VALUES ('B1234568','TN001',6);
+INSERT INTO ketQua
+	VALUES ('B1234568','TN101',7);
+INSERT INTO ketQua
+	VALUES ('B1234569','TN001',4);
+INSERT INTO ketQua
+	VALUES ('B1234569','TN101',6);
+INSERT INTO ketQua
+	VALUES ('B1334567','CT101',1);
+INSERT INTO ketQua
+	VALUES ('B1334567','TN001',3);
+INSERT INTO ketQua
+	VALUES ('B1244567','CT176',4);
+INSERT INTO ketQua
+	VALUES ('B1244567','TN172',2);
+INSERT INTO ketQua
+	VALUES ('B1334568','SP012',10);
+INSERT INTO ketQua
+	VALUES ('B1334568','CT101',8);
+INSERT INTO ketQua
+	VALUES ('B1334568','TN101',9);
+--------------------------------------------------------------------------------------------------------------------- 
+-- THU TUC
+DELIMITER //
+CREATE PROCEDURE sp_XemDANHSACH()
+BEGIN
+	SELECT mssv,hoTen,gioiTinh,ngaySinh,noiSinh,diaChi,tenKhoa 
+    FROM sinhVien s,khoa k 
+    WHERE s.maKhoa=k.maKhoa;
+END//
+-- DROP PROCEDURE sp_XemDANHSACH
+-- CALL sp_XemDANHSACH()
+
+DELIMITER //
+CREATE PROCEDURE sp_TimKiemSINHVIEN(IN MSSV CHAR(8))
+BEGIN
+	SELECT mssv,hoTen,gioiTinh,ngaySinh,noiSinh,diaChi,tenKhoa 
+    FROM sinhVien s,khoa k 
+    WHERE s.maKhoa=k.maKhoa AND s.mssv=MSSV;
+END//
+-- DROP PROCEDURE sp_TimKiemsinhvien
+-- CALL sp_TimKiemsinhvien('B1234569')
+
+DELIMITER //
+CREATE PROCEDURE sp_ThemSINHVIEN(	MSSV CHAR(8), HOTEN VARCHAR(45),
+									GIOITINH CHAR(3), NGAYSINH DATE, NOISINH VARCHAR(40),
+									DIACHI VARCHAR(100), TENKHOA VARCHAR(50)	)
+BEGIN
+	DECLARE MAKHOA VARCHAR(10);
+    SET MAKHOA = (SELECT k.maKhoa FROM khoa k WHERE k.tenKhoa = TENKHOA);
+    
+    INSERT INTO sinhVien
+    VALUES (MSSV, HOTEN, GIOITINH, NGAYSINH, NOISINH, DIACHI, MAKHOA);
+end//
+-- DROP PROCEDURE sp_ThemSINHVIEN
+-- CALL sp_ThemSINHVIEN('B1809188', 'Pham Nhu Thuan', 'NAM','2000-03-04', 'Vinh Long', 'Vung Liem, Vinh Long', 'CONG NGHE THONG TIN VA TRUYEN THONG')
+
+DELIMITER //
+CREATE PROCEDURE sp_XoaSINHVIEN(MSSV CHAR(8))
+BEGIN
+	DELETE FROM ketQua
+    WHERE ketQua.mssv = MSSV;
+    
+    DELETE FROM sinhVien
+    WHERE sinhVien.mssv = MSSV;
+    
+END//
+-- DROP PROCEDURE sp_XoaSINHVIEN
+-- CALL sp_XoaSINHVIEN('B1809188')
+
+DELIMITER //
+CREATE PROCEDURE sp_ChinhSuaDIACHI(MSSV CHAR(8),DIACHI VARCHAR(100))
+BEGIN
+	UPDATE sinhVien s
+	SET s.diaChi=DIACHI
+    WHERE s.mssv=MSSV;
+END//
+-- DROP PROCEDURE sp_ChinhSuaDIACHI
+-- CALL sp_ChinhSuaDIACHI('B1234567','338')
+
+DELIMITER //
+CREATE PROCEDURE sp_ThemMOMHOC(MSSV CHAR(8),MAHP CHAR(8))
+BEGIN
+	INSERT INTO ketQua (mssv,maHP)
+    VALUES (MSSV,MAHP);
+END//
+-- DROP PROCEDURE sp_ThemMOMHOC
+-- CALL sp_ThemMOMHOC('B1234567','SP012')
+
+DELIMITER //
+CREATE PROCEDURE sp_XoaMONHOC(MSSV CHAR(8),MAHP CHAR(8))
+BEGIN
+	DELETE FROM ketQua k
+    WHERE k.mssv=MSSV AND k.maHP=MAHP;
+END//
+-- DROP PROCEDURE sp_XoaMONHOC
+-- CALL sp_XoaMONHOC('B1234567','CT101')
+
+DELIMITER //
+CREATE PROCEDURE sp_ChinhSuaDIEM(MSSV CHAR(8),MAHP CHAR(8),DIEM FLOAT)
+BEGIN
+	UPDATE ketQua k
+    SET k.diem=DIEM
+    WHERE k.mssv=mssv AND k.maHP=MAHP;
+END//
+-- DROP PROCEDURE sp_ChinhSuaDIEM
+-- CALL sp_ChinhSuaDIEM('B1234567','SP012',10)
+
+DELIMITER //
+CREATE PROCEDURE sp_BANGDIEM(MSSV char(8))
+BEGIN
+	SELECT s.mssv,s.hoTen,k.tenKhoa,h.maHP,h.tenHP,kq.diem
+    FROM sinhVien s,khoa k,hocPhan h,ketQua kq
+    where k.maKhoa=s.maKhoa
+		and s.mssv=kq.mssv
+		and kq.maHP=h.maHP
+        and s.mssv=MSSV;
+END//
+-- DROP PROCEDURE sp_BANGDIEM
+-- CALL sp_BANGDIEM('B1234567')
+----------------------------------------------------------------------------------------------------------------------
+-- HAM
+DELIMITER //
+CREATE FUNCTION fn_DiemTB(MSSV CHAR(8))
+RETURNS FLOAT
+DETERMINISTIC
+BEGIN
+	DECLARE diemtb FLOAT DEFAULT -1;
+    
+		SELECT round(sum(k.diem*h.soTinChi)/sum(h.soTinChi),1) INTO diemtb
+		FROM ketQua k
+		JOIN hocPhan h USING (maHP)
+		GROUP BY k.mssv
+		HAVING k.mssv = MSSV;
+
+		RETURN diemtb;
+
+END//
+-- DROP FUNCTION fn_DiemTB;
+-- SELECT fn_DiemTB('B1234567');
+
+DELIMITER //
+CREATE FUNCTION fn_DuDieuKienTN(mssv CHAR(8))
+RETURNS INT
+DETERMINISTIC
+BEGIN
+	DECLARE diemtb  FLOAT DEFAULT -1;
+    DECLARE tongTC INT;
+    DECLARE TN INT;
+    
+    SELECT fn_DiemTB(mssv) INTO diemtb;
+    
+    SELECT sum(h.soTinChi) INTO tongTC
+    FROM ketQua k
+    JOIN hocPhan h USING(maHP)
+    GROUP BY k.mssv
+    HAVING k.mssv = mssv;
+    
+    IF diemtb>4 AND tongTC>6
+    THEN
+		SET TN = 1;
+	ELSE
+		SET TN = 0;
+	END IF;
+    RETURN TN;
+END//
+-- DROP FUNCTION fn_DuDieuKienTN
+-- SELECT fn_DuDieuKienTN('B1234567')
+
+DELIMITER //
+CREATE FUNCTION fn_LoaiTN(MSSV char(8))
+RETURNS VARCHAR(20)
+DETERMINISTIC
+BEGIN 
+	DECLARE loaiTN VARCHAR(20);
+	DECLARE diemtb FLOAT;
+    SELECT fn_DiemTB(MSSV) INTO diemtb;
+	IF fn_DuDieuKienTN(MSSV) = 1
+    THEN
+		CASE
+			WHEN diemtb>9.0 THEN SET loaiTN = 'GIOI';
+            WHEN diemtb>7.0 THEN SET loaiTN = 'KHA';
+            WHEN diemtb>5.0 THEN SET loaiTN = 'TRUNG BINH';
+            ELSE SET loaiTN = 'YEU';
+		END CASE;
+	ELSE	SET loaiTN ='KHONG';
+	END IF;
+RETURN loaiTN;
+END//
+-- DROP FUNCTION fn_LoaiTN
+-- SELECT fn_LoaiTN('B1234567')
